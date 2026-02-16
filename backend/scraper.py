@@ -9,7 +9,18 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def callback(driver, movies):
+def get_user_profile_picture(driver, username: str):
+    try:
+        url = f"https://letterboxd.com/{username}/"
+        driver.get(url)
+        time.sleep(5)
+        img_elem = driver.find_element(By.CSS_SELECTOR, "span.avatar img")
+        return img_elem.get_attribute("src")
+    except Exception as e:  
+        logger.warning(f"Failed to get user profile picture: {e}")
+        return None
+
+def watchlist_callback(driver, movies):
     """
     Callback function to extract movies from the current page.
     """
@@ -36,20 +47,10 @@ def callback(driver, movies):
             logger.warning(f"Failed to parse a movie element: {e}")
             continue
 
-def get_watchlist(username: str):
+def get_watchlist(driver, username: str):
     """
     Scrapes the watchlist of a given Letterboxd user.
     """
-    logger.info(f"Starting scrape for user: {username}")
-    
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
-    
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
     movies = []
 
     try:
@@ -67,12 +68,12 @@ def get_watchlist(username: str):
             max_pages = 1
         time.sleep(5)
         
-        callback(driver, movies) # first page
+        watchlist_callback(driver, movies) # first page
         for current_page in range(2, max_pages + 1):
             url = f"https://letterboxd.com/{username}/watchlist/page/{current_page}/"
             driver.get(url)
             time.sleep(5)
-            callback(driver, movies)
+            watchlist_callback(driver, movies)
                 
         logger.info(f"Found {len(movies)} movies.")
         
@@ -89,7 +90,27 @@ def get_watchlist(username: str):
     finally:
         driver.quit()
 
+def scrape_user(username: str):
+    logger.info(f"Starting scrape for user: {username}")
+    
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
+    
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+    profile_picture = get_user_profile_picture(driver, username)
+    watchlist = get_watchlist(driver, username)
+    
+    return {
+        "username": username,
+        "profile_picture": profile_picture,
+        "watchlist": watchlist
+    }
+
 if __name__ == "__main__":
     # Test run
-    data = get_watchlist("JohnDoe")
+    data = scrape_user("JohnDoe")
     print(data)

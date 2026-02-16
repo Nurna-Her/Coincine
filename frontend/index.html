@@ -10,40 +10,49 @@
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">
-                <span class="logo-circles">
-                    <span class="circle orange"></span>
-                    <span class="circle green"></span>
-                    <span class="circle blue"></span>
-                </span>
-                <h1>Letterboxd Roulette</h1>
-            </div>
-            <p class="subtitle">Spin your watchlist.</p>
-        </header>
+    <div class="app-container">
+        <aside class="users-sidebar">
+            <h3>Users</h3>
+            <div id="users-list"></div>
+            <button id="all-done-btn" class="all-done-btn" disabled>All Done</button>
+        </aside>
 
-        <section class="controls">
-            <input type="text" id="username" placeholder="Letterboxd Username" value="jonathanfujii" />
-            <button id="sync-btn">Sync Watchlist</button>
-        </section>
+        <main class="main-content">
+            <header>
+                <div class="logo">
+                    <span class="logo-circles">
+                        <span class="circle orange"></span>
+                        <span class="circle green"></span>
+                        <span class="circle blue"></span>
+                    </span>
+                    <h1>Letterboxd Roulette</h1>
+                </div>
+                <p class="subtitle">Spin your watchlist.</p>
+            </header>
 
-        <section class="roulette-container">
-            <div id="movie-display" class="movie-display">
-                <div class="pointer"></div>
-                <canvas id="roulette-wheel" width="800" height="800"></canvas>
-            </div>
-            <button id="spin-btn" disabled>SPIN</button>
-        </section>
+            <section class="controls">
+                <input type="text" id="username" placeholder="Letterboxd Username" value="JohnDoe" />
+                <button id="sync-btn">Add User</button>
+                <button id="clear-btn" class="btn-secondary">Clear All</button>
+            </section>
 
-        <div id="result-modal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2 id="winner-title">Movie Title</h2>
-                <img id="winner-poster" src="" alt="Winner Poster">
-                <a id="winner-link" href="#" target="_blank" class="btn-letterboxd">View on Letterboxd</a>
+            <section class="roulette-container">
+                <div id="movie-display" class="movie-display">
+                    <div class="pointer"></div>
+                    <canvas id="roulette-wheel" width="800" height="800"></canvas>
+                </div>
+                <button id="spin-btn" disabled>SPIN</button>
+            </section>
+
+            <div id="result-modal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2 id="winner-title">Movie Title</h2>
+                    <img id="winner-poster" src="" alt="Winner Poster">
+                    <a id="winner-link" href="#" target="_blank" class="btn-letterboxd">View on Letterboxd</a>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
     <script src="app.js"></script>
 </body>

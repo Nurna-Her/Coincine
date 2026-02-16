@@ -2,10 +2,13 @@ const API_URL = "http://localhost:8000/api";
 
 const usernameInput = document.getElementById("username");
 const syncBtn = document.getElementById("sync-btn");
+const clearBtn = document.getElementById("clear-btn");
+const allDoneBtn = document.getElementById("all-done-btn");
 const spinBtn = document.getElementById("spin-btn");
 const movieDisplay = document.getElementById("movie-display");
 const modal = document.getElementById("result-modal");
 const closeModal = document.querySelector(".close");
+const usersListDiv = document.getElementById("users-list");
 
 // Winner elements
 const winnerTitle = document.getElementById("winner-title");
@@ -13,12 +16,13 @@ const winnerPoster = document.getElementById("winner-poster");
 const winnerLink = document.getElementById("winner-link");
 
 let movies = [];
+let addedUsers = [];  // Array of {username, profile_picture}
 
 syncBtn.addEventListener("click", async () => {
-    const username = usernameInput.value;
+    const username = usernameInput.value.trim();
     if (!username) return alert("Please enter a username");
 
-    syncBtn.textContent = "Syncing...";
+    syncBtn.textContent = "Adding...";
     syncBtn.disabled = true;
 
     try {
@@ -28,8 +32,12 @@ syncBtn.addEventListener("click", async () => {
         const data = await response.json();
 
         if (response.ok) {
+            addedUsers = data.users;
+            updateUsersDisplay();
+            usernameInput.value = ""; // Clear input
+            // Don't load movies yet - wait for All Done
+            allDoneBtn.disabled = false;
             alert(data.message);
-            await loadMovies();
         } else {
             alert("Error: " + data.detail);
         }
@@ -37,10 +45,87 @@ syncBtn.addEventListener("click", async () => {
         console.error(error);
         alert("Failed to connect to backend");
     } finally {
-        syncBtn.textContent = "Sync Watchlist";
+        syncBtn.textContent = "Add User";
         syncBtn.disabled = false;
     }
 });
+
+clearBtn.addEventListener("click", async () => {
+    if (!confirm("Clear all watchlists?")) return;
+
+    try {
+        const response = await fetch(`${API_URL}/clear`, {
+            method: "POST"
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            addedUsers = [];
+            movies = [];
+            updateUsersDisplay();
+            spinBtn.disabled = true;
+            allDoneBtn.disabled = true;
+            // Clear wheel
+            segments = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            alert(data.message);
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Failed to clear");
+    }
+});
+
+allDoneBtn.addEventListener("click", async () => {
+    allDoneBtn.textContent = "Loading...";
+    allDoneBtn.disabled = true;
+
+    await loadMovies();
+
+    allDoneBtn.textContent = "All Done";
+});
+
+async function removeUser(username) {
+    try {
+        const response = await fetch(`${API_URL}/remove?username=${username}`, {
+            method: "POST"
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            addedUsers = data.users;
+            updateUsersDisplay();
+            await loadMovies();
+        } else {
+            alert("Error: " + data.detail);
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Failed to remove user");
+    }
+}
+
+function updateUsersDisplay() {
+    if (addedUsers.length === 0) {
+        usersListDiv.innerHTML = '<span style="color: var(--text-color); font-size: 0.9rem;">No users added</span>';
+    } else {
+        usersListDiv.innerHTML = addedUsers.map(user => {
+            const avatarImg = user.profile_picture
+                ? `<img src="${user.profile_picture}" class="user-avatar" alt="${user.username}" />`
+                : `<div class="user-avatar" style="background-color: var(--accent-green);"></div>`;
+
+            return `
+                <div class="user-item">
+                    <div class="user-info">
+                        ${avatarImg}
+                        <span>${user.username}</span>
+                    </div>
+                    <button class="remove-user-btn" onclick="removeUser('${user.username}')">×</button>
+                </div>
+            `;
+        }).join('');
+    }
+}
 
 async function loadMovies() {
     try {

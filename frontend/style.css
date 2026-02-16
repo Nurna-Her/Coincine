@@ -15,16 +15,120 @@ body {
     color: var(--text-color);
     font-family: var(--font-family);
     margin: 0;
-    display: flex;
-    justify-content: center;
     min-height: 100vh;
 }
 
-.container {
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.users-sidebar {
+    width: 250px;
+    background-color: var(--header-bg);
+    padding: 20px;
+    border-right: 2px solid #456;
+    overflow-y: auto;
+}
+
+.users-sidebar h3 {
+    color: var(--text-highlight);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+#users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-item {
+    background-color: var(--bg-color);
+    border: 1px solid var(--accent-green);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.user-item:hover {
+    background-color: #1a1e24;
+}
+
+.user-item span {
+    color: var(--text-highlight);
+    font-size: 0.95rem;
+}
+
+.remove-user-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+    transition: background-color 0.2s;
+}
+
+.remove-user-btn:hover {
+    background-color: #c82333;
+}
+
+.all-done-btn {
     width: 100%;
-    max-width: 600px;
+    margin-top: 20px;
+    background-color: var(--accent-green);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.all-done-btn:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.all-done-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.main-content {
+    flex: 1;
     padding: 20px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 header {
@@ -105,6 +209,10 @@ button:disabled {
 
 #sync-btn {
     background-color: var(--accent-blue);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
 }
 
 #spin-btn {
