@@ -26,7 +26,7 @@ syncBtn.addEventListener("click", async () => {
     syncBtn.disabled = true;
 
     try {
-        const response = await fetch(`${API_URL}/sync?username=${username}`, {
+        const response = await fetch(`${API_URL}/add_user?username=${username}`, {
             method: "POST"
         });
         const data = await response.json();
@@ -35,9 +35,8 @@ syncBtn.addEventListener("click", async () => {
             addedUsers = data.users;
             updateUsersDisplay();
             usernameInput.value = ""; // Clear input
-            // Don't load movies yet - wait for All Done
             allDoneBtn.disabled = false;
-            alert(data.message);
+            // Don't show alert for simple add
         } else {
             alert("Error: " + data.detail);
         }
@@ -77,12 +76,30 @@ clearBtn.addEventListener("click", async () => {
 });
 
 allDoneBtn.addEventListener("click", async () => {
-    allDoneBtn.textContent = "Loading...";
+    allDoneBtn.textContent = "Syncing...";
     allDoneBtn.disabled = true;
 
-    await loadMovies();
+    try {
+        const response = await fetch(`${API_URL}/sync_all`, {
+            method: "POST"
+        });
+        const data = await response.json();
 
-    allDoneBtn.textContent = "All Done";
+        if (response.ok) {
+            alert(data.message);
+            await loadMovies();
+            allDoneBtn.textContent = "Synced!";
+        } else {
+            alert("Error: " + data.detail);
+            allDoneBtn.textContent = "Sync Up!";
+            allDoneBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Failed to sync");
+        allDoneBtn.textContent = "Sync Up!";
+        allDoneBtn.disabled = false;
+    }
 });
 
 async function removeUser(username) {
