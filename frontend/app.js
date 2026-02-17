@@ -307,5 +307,3 @@ window.onclick = (event) => {
     }
 };
 
-// Initial load check
-loadMovies();
