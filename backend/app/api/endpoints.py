@@ -25,7 +25,6 @@ def get_shared_driver():
 
 @router.post("/add_user")
 def add_user(username: str):
-    print("eoeo")
     global added_users_data
     if username in added_users_data:
         raise HTTPException(status_code=400, detail=f"User {username} already added")

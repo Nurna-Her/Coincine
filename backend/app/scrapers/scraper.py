@@ -61,7 +61,6 @@ class LetterboxdScraper:
         try:
             url = f"https://letterboxd.com/{username}/"
             self.driver.get(url)
-            self.driver.save_screenshot(f"screenshot_{username}.png")
             time.sleep(2)
             img_elem = self.driver.find_element(By.CSS_SELECTOR, "span.avatar img")
             return img_elem.get_attribute("src")
