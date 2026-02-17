@@ -49,7 +49,7 @@ def add_user(username: str):
     
     return {
         "message": f"Added {username} to the list",
-        "users": [{"username": u, "profile_picture": get_user_profile_picture(username)} for u in added_usernames]
+        "users": [{"username": u, "profile_picture": get_user_profile_picture(u)} for u in added_usernames]
     }
 
 @app.post("/api/sync_all")
