@@ -9,6 +9,9 @@ const movieDisplay = document.getElementById("movie-display");
 const modal = document.getElementById("result-modal");
 const closeModal = document.querySelector(".close");
 const usersListDiv = document.getElementById("users-list");
+const mixBtn = document.getElementById("mix-btn");
+const matchBtn = document.getElementById("match-btn");
+const maxMoviesInput = document.getElementById("max-movies-input");
 
 // Winner elements
 const winnerTitle = document.getElementById("winner-title");
@@ -17,6 +20,7 @@ const winnerLink = document.getElementById("winner-link");
 
 let movies = [];
 let sessionUsers = [];  // Array of {username, profile_picture, frequent}
+let currentMode = "mix"; // Default mode
 
 // On load, fetch saved users or whatever is needed
 window.addEventListener("DOMContentLoaded", async () => {
@@ -121,6 +125,34 @@ allDoneBtn.addEventListener("click", async () => {
     }
 });
 
+// Watchlist Modes
+mixBtn.addEventListener("click", () => setMode("mix"));
+matchBtn.addEventListener("click", () => setMode("match"));
+maxMoviesInput.addEventListener("change", () => loadMovies());
+
+function setMode(mode) {
+    if (currentMode === mode) return;
+    currentMode = mode;
+
+    // UI Toggle
+    mixBtn.classList.toggle("active", mode === "mix");
+    matchBtn.classList.toggle("active", mode === "match");
+
+    loadMovies(); // Automatically update roulette
+}
+
+function mix_watchlists() {
+    console.log("Mode: Mix watchlists - Placeholder");
+    // Placeholder logic for mixing (current default behavior)
+    loadMovies(); // Automatically update roulette
+}
+
+function match_watchlists() {
+    console.log("Mode: Match watchlists - Placeholder");
+    // Placeholder logic for matching (pass for now)
+    loadMovies(); // Automatically update roulette
+}
+
 async function removeUser(username) {
     try {
         const response = await fetch(`${API_URL}/remove?username=${username}`, {
@@ -186,9 +218,10 @@ function updateUsersDisplay() {
         usersListDiv.innerHTML = '<span style="color: var(--text-color); font-size: 0.9rem;">No users added</span>';
     } else {
         usersListDiv.innerHTML = sessionUsers.map(user => {
+            const frequentClass = user.frequent ? "frequent" : "";
             const avatarImg = user.profile_picture
-                ? `<img src="${user.profile_picture}" class="user-avatar" alt="${user.username}" />`
-                : `<div class="user-avatar" style="background-color: var(--accent-green);"></div>`;
+                ? `<img src="${user.profile_picture}" class="user-avatar ${frequentClass}" alt="${user.username}" />`
+                : `<div class="user-avatar ${frequentClass}" style="background-color: var(--accent-green);"></div>`;
 
             const saveIcon = user.frequent ? "★" : "☆";
             const saveTitle = user.frequent ? "Unsave User" : "Save User";
@@ -213,16 +246,21 @@ function updateUsersDisplay() {
 }
 
 async function loadMovies() {
+    const maxMovies = maxMoviesInput.value || 20;
     try {
-        const response = await fetch(`${API_URL}/roulette`);
+        const response = await fetch(`${API_URL}/roulette?mode=${currentMode}&max_movies=${maxMovies}`);
         if (response.ok) {
             movies = await response.json();
             if (movies.length > 0) {
                 spinBtn.disabled = false;
-                // Initial draw with random selection
-                const initialSegs = movies.slice(0, SEGMENT_COUNT);
-                segments = initialSegs;
+                // Initial draw with whatever is returned
+                segments = movies;
                 drawWheel();
+            } else {
+                // Clear wheel if no movies match
+                segments = [];
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                spinBtn.disabled = true;
             }
         }
     } catch (error) {
@@ -242,7 +280,10 @@ const SPIN_DURATION = 5000; // ms
 const colors = ["#00e054", "#ff8000", "#40bcf4"]; // Green, Orange, Blue
 
 function drawWheel() {
-    if (segments.length === 0) return;
+    if (segments.length === 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+    }
 
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
