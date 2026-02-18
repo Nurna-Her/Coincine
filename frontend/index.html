@@ -42,16 +42,30 @@
                     <canvas id="roulette-wheel" width="800" height="800"></canvas>
                 </div>
 
-                <div class="modes-container">
-                    <button id="mix-btn" class="mode-btn active">Mix</button>
-                    <button id="match-btn" class="mode-btn">Match</button>
-                    <div class="max-movies-group">
-                        <label for="max-movies-input">Limit:</label>
-                        <input type="number" id="max-movies-input" value="20" min="2" max="100">
+                <div class="modes-group">
+                    <span class="modes-label">Lista:</span>
+                    <div class="modes-container">
+                        <button id="mix-btn" class="mode-btn active">Mix</button>
+                        <button id="match-btn" class="mode-btn">Match</button>
+                        <div class="max-movies-group">
+                            <label for="max-movies-input">Límite:</label>
+                            <input type="number" id="max-movies-input" value="20" min="2" max="100">
+                        </div>
                     </div>
                 </div>
 
-                <button id="spin-btn" disabled>SPIN</button>
+                <div class="modes-group">
+                    <span class="modes-label">Ruleta:</span>
+                    <div class="modes-container">
+                        <button id="select-mode-btn" class="mode-btn active">Elegir</button>
+                        <button id="eliminate-mode-btn" class="mode-btn">Eliminar</button>
+                    </div>
+                </div>
+
+                <div class="spin-controls">
+                    <button id="reload-btn" class="icon-btn" title="Recargar Selección">↺</button>
+                    <button id="spin-btn" disabled>SPIN</button>
+                </div>
             </section>
 
             <div id="result-modal" class="modal hidden">
