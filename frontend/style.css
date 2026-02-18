@@ -103,6 +103,50 @@ body {
     opacity: 0.9;
 }
 
+.spin-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.icon-btn {
+    background-color: var(--header-bg);
+    border: 2px solid #456;
+    color: var(--text-color);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon-btn:hover {
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+    transform: rotate(45deg);
+}
+
+#spin-btn {
+    background: linear-gradient(135deg, var(--accent-orange), #ff4d00);
+    border: none;
+    color: #fff;
+    padding: 15px 60px;
+    border-radius: 30px;
+    font-size: 1.5rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 128, 0, 0.3);
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
 .all-done-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -113,7 +157,14 @@ body {
     height: 44px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--accent-blue);
+    /* Default blue */
+    transition: border-color 0.3s;
+}
+
+.user-avatar.frequent {
     border: 2px solid var(--accent-orange);
+    /* Frequent orange */
 }
 
 .user-info {
@@ -363,4 +414,88 @@ button:disabled {
     text-decoration: none;
     border-radius: 4px;
     margin-top: 10px;
+}
+
+.modes-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+.modes-label {
+    color: #89a;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+/* Modes Container */
+.modes-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.mode-btn {
+    background-color: var(--header-bg);
+    border: 2px solid #456;
+    color: var(--text-color);
+    padding: 8px 25px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 100px;
+}
+
+.mode-btn:hover {
+    border-color: var(--text-color);
+}
+
+.mode-btn#mix-btn.active {
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+    background-color: rgba(0, 224, 84, 0.1);
+}
+
+.mode-btn#match-btn.active {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+    background-color: rgba(64, 188, 244, 0.1);
+}
+
+.mode-btn#select-mode-btn.active,
+.mode-btn#eliminate-mode-btn.active {
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+    background-color: rgba(255, 128, 0, 0.1);
+}
+
+.max-movies-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+#max-movies-input {
+    background-color: var(--header-bg);
+    border: 2px solid #456;
+    color: var(--text-color);
+    padding: 5px 10px;
+    border-radius: 8px;
+    width: 60px;
+    font-weight: bold;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+#max-movies-input:focus {
+    border-color: var(--accent-orange);
 }

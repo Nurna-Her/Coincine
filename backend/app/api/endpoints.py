@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from sqlmodel import select
+from sqlmodel import select, func
 import random
-from typing import List
+from typing import List, Optional
 from ..models.models import Movie, User, UserMovieLink
 from ..scrapers.scraper import LetterboxdScraper
 from ..core.logging import logger
@@ -218,14 +218,64 @@ def update_user_data(username: str):
     return {"message": f"Data updated for {username}"}
 
 @router.get("/roulette", response_model=List[Movie])
-def get_roulette_candidates():
+def get_roulette_candidates(mode: str = "mix", max_movies: int = 20):
     """
-    Returns all movies from in-memory list.
+    Returns movies for the roulette based on current session users.
+    'mix' = Union of all watchlists.
+    'match' = Intersection of all watchlists.
     """
-    if not movies_db:
-        raise HTTPException(status_code=404, detail="No movies in database. Sync first!")
+    global session_users, movies_db
     
-    return movies_db
+    if not session_users:
+        raise HTTPException(status_code=400, detail="No users in session. Add users first!")
+
+    usernames = [u.lower() for u in session_users.keys()]
+    
+    with next(get_session()) as db:
+        if mode == "match":
+            # Intersection: Movies that are present in ALL session users' watchlists.
+            # We count distinct user_ids in the link table for each movie and compare with total users.
+            user_count = len(usernames)
+            
+            # Subquery to get user IDs for safety
+            user_ids_stmt = select(User.id).where(User.username.in_(usernames))
+            user_ids = db.exec(user_ids_stmt).all()
+            
+            if not user_ids:
+                 raise HTTPException(status_code=404, detail="Session users not found in DB")
+
+            # Efficient SQL Intersection
+            stmt = (
+                select(Movie)
+                .join(UserMovieLink)
+                .where(UserMovieLink.user_id.in_(user_ids))
+                .group_by(Movie.letterboxd_url)
+                .having(func.count(UserMovieLink.user_id) == user_count)
+            )
+            roulette_movies = db.exec(stmt).all()
+        else:
+            # Mix (Union): Movies present in at least one of the session users' watchlists.
+            stmt = (
+                select(Movie)
+                .join(UserMovieLink)
+                .join(User)
+                .where(User.username.in_(usernames))
+                .distinct()
+            )
+            roulette_movies = db.exec(stmt).all()
+
+    if not roulette_movies:
+        return []
+
+    # Shuffle and Limit
+    random.shuffle(roulette_movies)
+    if len(roulette_movies) > max_movies:
+        roulette_movies = roulette_movies[:max_movies]
+    
+    # Update movies_db for /spin compatibility (though we should probably refactor /spin too)
+    movies_db = roulette_movies
+
+    return roulette_movies
 
 @router.get("/spin", response_model=Movie)
 def spin_roulette():
