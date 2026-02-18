@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .api.endpoints import router, _shared_driver
 from .core.logging import logger
+from .core.database import create_db_and_tables
 
 app = FastAPI(title="Coincine API", version="1.0.0")
 
@@ -18,6 +19,8 @@ app.include_router(router, prefix="/api")
 @app.on_event("startup")
 async def startup_event():
     logger.info("Coincine Backend Starting Up...")
+    create_db_and_tables()
+
 
 @app.on_event("shutdown")
 async def shutdown_event():

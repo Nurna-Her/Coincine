@@ -418,4 +418,5 @@ FodyWeavers.xsd
 *.msp
 
 # files
-database.db
+debug*
+*.db
