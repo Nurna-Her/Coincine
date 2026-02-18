@@ -103,6 +103,22 @@ body {
     opacity: 0.9;
 }
 
+.config-sidebar {
+    width: 250px;
+    background-color: var(--header-bg);
+    padding: 20px;
+    border-left: 2px solid #456;
+    overflow-y: auto;
+}
+
+.config-sidebar h3 {
+    color: var(--text-highlight);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
 .spin-controls {
     display: flex;
     justify-content: center;
@@ -270,7 +286,7 @@ h1 {
     display: flex;
     gap: 10px;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 50px;
 }
 
 input {
@@ -316,37 +332,72 @@ button:disabled {
     margin-top: 20px;
 }
 
-.movie-display {
-    width: 400px;
-    height: 400px;
-    margin: 0 auto;
+.premium-roulette {
+    --size: 400px;
+    outline: 15px solid #fff;
+    outline-offset: -10px;
+    border-radius: 100%;
+    box-shadow: 15px 15px 0 -10px #00000022;
+    height: var(--size);
     position: relative;
-    border-radius: 50%;
-    overflow: visible;
-    background: transparent;
-    border: none;
+    width: var(--size);
+    z-index: 1;
+    margin: 0 auto 50px;
+}
+
+.premium-roulette:before,
+.premium-roulette:after {
+    background: #00000022;
+    border-radius: 100%;
+    content: "";
+    height: 80px;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-45%, -45%);
+    width: 80px;
+    z-index: 2;
+}
+
+.premium-roulette:after {
+    background: #ffffff;
+    /* User can add logo here if they wish */
+    transform: translate(-50%, -50%);
+    z-index: 2;
 }
 
 #roulette-wheel {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    /* The canvas drawing handles segments */
     transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-.pointer {
+.roulette-marker {
     position: absolute;
-    top: -20px;
+    top: -30px;
     left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-top: 30px solid white;
+    transform: translateX(-50%) rotate(90deg);
     z-index: 10;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.roulette-marker:before,
+.roulette-marker:after {
+    border-bottom: 20px solid transparent;
+    border-left: 40px solid #ff3d81;
+    border-top: 20px solid transparent;
+    content: "";
+    display: block;
+    height: 0;
+    width: 0;
+}
+
+.roulette-marker:after {
+    border-left: 40px solid #00000022;
+    position: absolute;
+    top: 4px;
+    z-index: -1;
 }
 
 /* Modal */

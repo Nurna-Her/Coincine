@@ -38,34 +38,36 @@
 
             <section class="roulette-container">
                 <div id="movie-display" class="movie-display">
-                    <div class="pointer"></div>
-                    <canvas id="roulette-wheel" width="800" height="800"></canvas>
-                </div>
+                    <div class="premium-roulette">
+                        <div class="roulette-marker"></div>
+                        <canvas id="roulette-wheel" width="800" height="800"></canvas>
+                        <div class="roulette-center"></div>
+                    </div>
 
-                <div class="modes-group">
-                    <span class="modes-label">Lista:</span>
-                    <div class="modes-container">
-                        <button id="mix-btn" class="mode-btn active">Mix</button>
-                        <button id="match-btn" class="mode-btn">Match</button>
-                        <div class="max-movies-group">
-                            <label for="max-movies-input">Límite:</label>
-                            <input type="number" id="max-movies-input" value="20" min="2" max="100">
+                    <div class="modes-group">
+                        <span class="modes-label">Lista:</span>
+                        <div class="modes-container">
+                            <button id="mix-btn" class="mode-btn active">Mix</button>
+                            <button id="match-btn" class="mode-btn">Match</button>
+                            <div class="max-movies-group">
+                                <label for="max-movies-input">Límite:</label>
+                                <input type="number" id="max-movies-input" value="20" min="2" max="100">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="modes-group">
-                    <span class="modes-label">Ruleta:</span>
-                    <div class="modes-container">
-                        <button id="select-mode-btn" class="mode-btn active">Elegir</button>
-                        <button id="eliminate-mode-btn" class="mode-btn">Eliminar</button>
+                    <div class="modes-group">
+                        <span class="modes-label">Ruleta:</span>
+                        <div class="modes-container">
+                            <button id="select-mode-btn" class="mode-btn active">Elegir</button>
+                            <button id="eliminate-mode-btn" class="mode-btn">Eliminar</button>
+                        </div>
                     </div>
-                </div>
 
-                <div class="spin-controls">
-                    <button id="reload-btn" class="icon-btn" title="Recargar Selección">↺</button>
-                    <button id="spin-btn" disabled>SPIN</button>
-                </div>
+                    <div class="spin-controls">
+                        <button id="reload-btn" class="icon-btn" title="Recargar Selección">↺</button>
+                        <button id="spin-btn" disabled>SPIN</button>
+                    </div>
             </section>
 
             <div id="result-modal" class="modal hidden">
@@ -77,6 +79,11 @@
                 </div>
             </div>
         </main>
+        <aside class="config-sidebar">
+            <h3>Config</h3>
+            <div id="config-list"></div>
+            <button id="all-done-btn" class="all-done-btn" disabled>Sync Up!</button>
+        </aside>
     </div>
     <script src="app.js"></script>
 </body>
