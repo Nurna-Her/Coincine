@@ -16,7 +16,27 @@ const winnerPoster = document.getElementById("winner-poster");
 const winnerLink = document.getElementById("winner-link");
 
 let movies = [];
-let addedUsers = [];  // Array of {username, profile_picture}
+let sessionUsers = [];  // Array of {username, profile_picture, frequent}
+
+// On load, fetch saved users or whatever is needed
+window.addEventListener("DOMContentLoaded", async () => {
+    await loadSavedUsers();
+});
+
+async function loadSavedUsers() {
+    try {
+        const response = await fetch(`${API_URL}/users/saved`);
+        if (response.ok) {
+            const savedUsers = await response.json();
+            // Automatically add saved users to current session for convenience? 
+            // Or just show them in a "Frequent" section?
+            // The user said: "Si al añadir un usuario este ya existe en la base de datos, se añade directamente (a la lista de la sesión)".
+            // Let's just update the display logic to show who is in session.
+        }
+    } catch (error) {
+        console.error("Error loading saved users", error);
+    }
+}
 
 syncBtn.addEventListener("click", async () => {
     const username = usernameInput.value.trim();
@@ -32,11 +52,10 @@ syncBtn.addEventListener("click", async () => {
         const data = await response.json();
 
         if (response.ok) {
-            addedUsers = data.users;
+            sessionUsers = data.users;
             updateUsersDisplay();
             usernameInput.value = ""; // Clear input
             allDoneBtn.disabled = false;
-            // Don't show alert for simple add
         } else {
             alert("Error: " + data.detail);
         }
@@ -59,7 +78,7 @@ clearBtn.addEventListener("click", async () => {
         const data = await response.json();
 
         if (response.ok) {
-            addedUsers = [];
+            sessionUsers = [];
             movies = [];
             updateUsersDisplay();
             spinBtn.disabled = true;
@@ -110,7 +129,7 @@ async function removeUser(username) {
         const data = await response.json();
 
         if (response.ok) {
-            addedUsers = data.users;
+            sessionUsers = data.users;
             updateUsersDisplay();
             await loadMovies();
         } else {
@@ -122,22 +141,71 @@ async function removeUser(username) {
     }
 }
 
+async function toggleSaveUser(username, isSaved) {
+    const method = isSaved ? "DELETE" : "POST";
+    try {
+        const response = await fetch(`${API_URL}/users/${username}/save_user`, {
+            method: method
+        });
+        if (response.ok) {
+            // Update local state and redraw
+            const user = sessionUsers.find(u => u.username === username);
+            if (user) user.frequent = !isSaved;
+            updateUsersDisplay();
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function refreshUser(username, btn) {
+    const originalText = btn.textContent;
+    btn.textContent = "...";
+    btn.disabled = true;
+    try {
+        const response = await fetch(`${API_URL}/users/${username}/update_user`, {
+            method: "POST"
+        });
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message);
+            await loadMovies();
+        } else {
+            alert("Error: " + data.detail);
+        }
+    } catch (error) {
+        console.error(error);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
 function updateUsersDisplay() {
-    if (addedUsers.length === 0) {
+    if (sessionUsers.length === 0) {
         usersListDiv.innerHTML = '<span style="color: var(--text-color); font-size: 0.9rem;">No users added</span>';
     } else {
-        usersListDiv.innerHTML = addedUsers.map(user => {
+        usersListDiv.innerHTML = sessionUsers.map(user => {
             const avatarImg = user.profile_picture
                 ? `<img src="${user.profile_picture}" class="user-avatar" alt="${user.username}" />`
                 : `<div class="user-avatar" style="background-color: var(--accent-green);"></div>`;
+
+            const saveIcon = user.frequent ? "★" : "☆";
+            const saveTitle = user.frequent ? "Unsave User" : "Save User";
 
             return `
                 <div class="user-item">
                     <div class="user-info">
                         ${avatarImg}
-                        <span>${user.username}</span>
+                        <div class="user-details">
+                            <span class="username">${user.username}</span>
+                            <div class="user-actions">
+                                <button class="action-btn save-btn" title="${saveTitle}" onclick="toggleSaveUser('${user.username}', ${user.frequent})">${saveIcon}</button>
+                                <button class="action-btn refresh-btn" title="Refresh Watchlist" onclick="refreshUser('${user.username}', this)">↻</button>
+                            </div>
+                        </div>
                     </div>
-                    <button class="remove-user-btn" onclick="removeUser('${user.username}')">×</button>
+                    <button class="remove-user-btn" onclick="removeUser('${user.username}')" title="Remove from session">×</button>
                 </div>
             `;
         }).join('');
