@@ -25,7 +25,7 @@
                         <span class="circle green"></span>
                         <span class="circle blue"></span>
                     </span>
-                    <h1>Letterboxd Roulette</h1>
+                    <h1>Coincine</h1>
                 </div>
                 <p class="subtitle">Spin your watchlist.</p>
             </header>
@@ -38,34 +38,43 @@
 
             <section class="roulette-container">
                 <div id="movie-display" class="movie-display">
-                    <div class="pointer"></div>
-                    <canvas id="roulette-wheel" width="800" height="800"></canvas>
-                </div>
+                    <div class="premium-roulette">
+                        <div class="roulette-marker"></div>
+                        <canvas id="roulette-wheel" width="800" height="800"></canvas>
+                        <div class="roulette-center"></div>
+                    </div>
 
-                <div class="modes-group">
-                    <span class="modes-label">Lista:</span>
-                    <div class="modes-container">
-                        <button id="mix-btn" class="mode-btn active">Mix</button>
-                        <button id="match-btn" class="mode-btn">Match</button>
+                    <div class="spin-controls">
+                        <button id="spin-btn" disabled>SPIN</button>
+                    </div>
+
+                    <div class="config-group">
                         <div class="max-movies-group">
-                            <label for="max-movies-input">Límite:</label>
-                            <input type="number" id="max-movies-input" value="20" min="2" max="100">
+                            <div class="limit-input-wrapper">
+                                <label for="max-movies-input">Movie limit:</label>
+                                <input type="number" id="max-movies-input" value="20" min="2" max="100">
+                            </div>
+                            <button id="reload-btn" class="icon-btn" title="Reload roulette">↺</button>
                         </div>
                     </div>
-                </div>
 
-                <div class="modes-group">
-                    <span class="modes-label">Ruleta:</span>
-                    <div class="modes-container">
-                        <button id="select-mode-btn" class="mode-btn active">Elegir</button>
-                        <button id="eliminate-mode-btn" class="mode-btn">Eliminar</button>
+                    <div class="modes-group">
+                        <span class="modes-label">Build the roulette by:</span>
+                        <div class="modes-container">
+                            <button id="mix-btn" class="mode-btn active">Mixing</button>
+                            <button id="match-btn" class="mode-btn">Matching</button>
+                        </div>
                     </div>
-                </div>
 
-                <div class="spin-controls">
-                    <button id="reload-btn" class="icon-btn" title="Recargar Selección">↺</button>
-                    <button id="spin-btn" disabled>SPIN</button>
-                </div>
+                    <div class="modes-group">
+                        <span class="modes-label">Roulette will choose the:</span>
+                        <div class="modes-container">
+                            <button id="select-mode-btn" class="mode-btn active">Winner</button>
+                            <button id="eliminate-mode-btn" class="mode-btn">Looser</button>
+                        </div>
+                    </div>
+
+
             </section>
 
             <div id="result-modal" class="modal hidden">

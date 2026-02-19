@@ -303,7 +303,15 @@ const SEGMENT_COUNT = 10;
 const SPIN_DURATION = 5000; // ms
 
 // Colors
-const colors = ["#00e054", "#ff8000", "#40bcf4"]; // Green, Orange, Blue
+const colors = [
+    "#00e054", // Green
+    "#ff8000", // Orange
+    "#40bcf4", // Blue
+    "#7b3fe4", // Purple
+    "#e53935", // Red
+    "#ffd200", // Yellow
+    "#ff3d81"  // Pink
+];
 
 function drawWheel() {
     if (segments.length === 0) {

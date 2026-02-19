@@ -115,8 +115,8 @@ body {
     background-color: var(--header-bg);
     border: 2px solid #456;
     color: var(--text-color);
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     font-size: 1.5rem;
     cursor: pointer;
@@ -270,7 +270,7 @@ h1 {
     display: flex;
     gap: 10px;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 50px;
 }
 
 input {
@@ -316,37 +316,72 @@ button:disabled {
     margin-top: 20px;
 }
 
-.movie-display {
-    width: 400px;
-    height: 400px;
-    margin: 0 auto;
+.premium-roulette {
+    --size: 450px;
+    outline: 15px solid #fff;
+    outline-offset: -10px;
+    border-radius: 100%;
+    box-shadow: 15px 15px 0 -10px #00000022;
+    height: var(--size);
     position: relative;
-    border-radius: 50%;
-    overflow: visible;
-    background: transparent;
-    border: none;
+    width: var(--size);
+    z-index: 1;
+    margin: 0 auto 50px;
+}
+
+.premium-roulette:before,
+.premium-roulette:after {
+    background: #00000022;
+    border-radius: 100%;
+    content: "";
+    height: 80px;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-45%, -45%);
+    width: 80px;
+    z-index: 2;
+}
+
+.premium-roulette:after {
+    background: #ffffff;
+    /* User can add logo here if they wish */
+    transform: translate(-50%, -50%);
+    z-index: 2;
 }
 
 #roulette-wheel {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    /* The canvas drawing handles segments */
     transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-.pointer {
+.roulette-marker {
     position: absolute;
-    top: -20px;
+    top: -30px;
     left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-top: 30px solid white;
+    transform: translateX(-50%) rotate(90deg);
     z-index: 10;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.roulette-marker:before,
+.roulette-marker:after {
+    border-bottom: 20px solid transparent;
+    border-left: 40px solid #ff3d81;
+    border-top: 20px solid transparent;
+    content: "";
+    display: block;
+    height: 0;
+    width: 0;
+}
+
+.roulette-marker:after {
+    border-left: 40px solid #00000022;
+    position: absolute;
+    top: 4px;
+    z-index: -1;
 }
 
 /* Modal */
@@ -416,6 +451,15 @@ button:disabled {
     margin-top: 10px;
 }
 
+.config-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 10px 0;
+    margin-bottom: 30px;
+}
+
 .modes-group {
     display: flex;
     flex-direction: column;
@@ -449,7 +493,7 @@ button:disabled {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s;
-    min-width: 100px;
+    min-width: 150px;
 }
 
 .mode-btn:hover {
@@ -457,8 +501,8 @@ button:disabled {
 }
 
 .mode-btn#mix-btn.active {
-    border-color: var(--accent-green);
-    color: var(--accent-green);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
     background-color: rgba(0, 224, 84, 0.1);
 }
 
@@ -470,18 +514,25 @@ button:disabled {
 
 .mode-btn#select-mode-btn.active,
 .mode-btn#eliminate-mode-btn.active {
-    border-color: var(--accent-orange);
-    color: var(--accent-orange);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
     background-color: rgba(255, 128, 0, 0.1);
 }
 
 .max-movies-group {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+    width: 100%;
     color: var(--text-color);
     font-size: 0.9rem;
     font-weight: bold;
+}
+
+.limit-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 #max-movies-input {
