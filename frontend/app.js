@@ -18,7 +18,6 @@ const reloadBtn = document.getElementById("reload-btn");
 
 // Winner elements
 const winnerTitle = document.getElementById("winner-title");
-const winnerPoster = document.getElementById("winner-poster");
 const winnerLink = document.getElementById("winner-link");
 
 let movies = [];
@@ -459,11 +458,6 @@ function handleSpinResult(winner) {
 
 function showWinnerDetail(winner) {
     winnerTitle.textContent = winner.title;
-    if (winner.poster_url && winner.poster_url !== "null") {
-        winnerPoster.src = winner.poster_url;
-    } else {
-        winnerPoster.src = "https://via.placeholder.com/300x450?text=" + encodeURIComponent(winner.title);
-    }
     winnerLink.href = winner.letterboxd_url;
     modal.classList.remove("hidden");
 }
