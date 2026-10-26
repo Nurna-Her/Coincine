@@ -15,7 +15,8 @@ This is a **work in progress** and is only the first iteration of the app. Many 
 
 Here is a snapshot on how the app works:
 
-![Coincine](LINK)
+![coincine](https://github.com/user-attachments/assets/845a9e86-33c9-41a1-9962-e44dbfefc158)
+
 
 ## 🎞️ Tech Stack
 - **Backend**: Python, FastAPI, SQLModel (SQLite), Selenium, undetected-chromedriver.
