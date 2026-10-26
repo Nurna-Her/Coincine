@@ -15,12 +15,12 @@ sleep 3
 echo "Launching Frontend..."
 # Check OS for the correct open command
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    xdg-open "frontend/index.html"
+    xdg-open "http://localhost:8000/"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    open "frontend/index.html"
+    open "http://localhost:8000/"
 else
     echo "Could not detect OS to open browser automatically."
-    echo "Please open frontend/index.html manually."
+    echo "Please open http://localhost:8000/ manually."
 fi
 
 echo "App is up and running!"

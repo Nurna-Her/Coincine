@@ -10,7 +10,7 @@ Start-Sleep -Seconds 3
 
 # Open Frontend
 Write-Host "Launching Frontend..."
-# Opens the HTML file in the default browser
-Start-Process "frontend\index.html"
+# Opens the app (served by the backend) in the default browser
+Start-Process "http://localhost:8000/"
 
 Write-Host "App is up and running!"

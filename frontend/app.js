@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000/api";
+const API_URL = "/api"; // The backend serves this page, so the API is same-origin
 
 const usernameInput = document.getElementById("username");
 const syncBtn = document.getElementById("sync-btn");
@@ -24,6 +24,9 @@ let movies = [];
 let sessionUsers = [];  // Array of {username, profile_picture, frequent}
 let currentMode = "mix"; // Default watchlist mode
 let interactionMode = "select"; // 'select' or 'eliminate'
+let isSpinning = false;
+let reloadPending = false; // A roulette reload was requested mid-spin
+let loadRequestId = 0; // Lets loadMovies drop responses that arrive out of order
 
 // On load, fetch saved users or whatever is needed
 window.addEventListener("DOMContentLoaded", async () => {
@@ -53,7 +56,7 @@ syncBtn.addEventListener("click", async () => {
     syncBtn.disabled = true;
 
     try {
-        const response = await fetch(`${API_URL}/add_user?username=${username}`, {
+        const response = await fetch(`${API_URL}/add_user?username=${encodeURIComponent(username)}`, {
             method: "POST"
         });
         const data = await response.json();
@@ -86,13 +89,9 @@ clearBtn.addEventListener("click", async () => {
 
         if (response.ok) {
             sessionUsers = [];
-            movies = [];
             updateUsersDisplay();
-            spinBtn.disabled = true;
             allDoneBtn.disabled = true;
-            // Clear wheel
-            segments = [];
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            resetWheel();
             alert(data.message);
         }
     } catch (error) {
@@ -180,7 +179,7 @@ function match_watchlists() {
 
 async function removeUser(username) {
     try {
-        const response = await fetch(`${API_URL}/remove?username=${username}`, {
+        const response = await fetch(`${API_URL}/remove?username=${encodeURIComponent(username)}`, {
             method: "POST"
         });
         const data = await response.json();
@@ -201,7 +200,7 @@ async function removeUser(username) {
 async function toggleSaveUser(username, isSaved) {
     const method = isSaved ? "DELETE" : "POST";
     try {
-        const response = await fetch(`${API_URL}/users/${username}/save_user`, {
+        const response = await fetch(`${API_URL}/users/${encodeURIComponent(username)}/save_user`, {
             method: method
         });
         if (response.ok) {
@@ -220,7 +219,7 @@ async function refreshUser(username, btn) {
     btn.textContent = "...";
     btn.disabled = true;
     try {
-        const response = await fetch(`${API_URL}/users/${username}/update_user`, {
+        const response = await fetch(`${API_URL}/users/${encodeURIComponent(username)}/update_user`, {
             method: "POST"
         });
         const data = await response.json();
@@ -238,56 +237,110 @@ async function refreshUser(username, btn) {
     }
 }
 
+// Small DOM helper: user data is only ever set through properties/textContent, never parsed as HTML
+function createElement(tag, className, props = {}) {
+    const elem = document.createElement(tag);
+    if (className) elem.className = className;
+    Object.assign(elem, props);
+    return elem;
+}
+
 function updateUsersDisplay() {
+    usersListDiv.replaceChildren();
+
     if (sessionUsers.length === 0) {
-        usersListDiv.innerHTML = '<span style="color: var(--text-color); font-size: 0.9rem;">No users added</span>';
-    } else {
-        usersListDiv.innerHTML = sessionUsers.map(user => {
-            const frequentClass = user.frequent ? "frequent" : "";
-            const avatarImg = user.profile_picture
-                ? `<img src="${user.profile_picture}" class="user-avatar ${frequentClass}" alt="${user.username}" />`
-                : `<div class="user-avatar ${frequentClass}" style="background-color: var(--accent-green);"></div>`;
-
-            const saveIcon = user.frequent ? "★" : "☆";
-            const saveTitle = user.frequent ? "Unsave User" : "Save User";
-
-            return `
-                <div class="user-item">
-                    <div class="user-info">
-                        ${avatarImg}
-                        <div class="user-details">
-                            <span class="username">${user.username}</span>
-                            <div class="user-actions">
-                                <button class="action-btn save-btn" title="${saveTitle}" onclick="toggleSaveUser('${user.username}', ${user.frequent})">${saveIcon}</button>
-                                <button class="action-btn refresh-btn" title="Refresh Watchlist" onclick="refreshUser('${user.username}', this)">↻</button>
-                            </div>
-                        </div>
-                    </div>
-                    <button class="remove-user-btn" onclick="removeUser('${user.username}')" title="Remove from session">×</button>
-                </div>
-            `;
-        }).join('');
+        const emptyMsg = createElement("span", "", { textContent: "No users added" });
+        emptyMsg.style.color = "var(--text-color)";
+        emptyMsg.style.fontSize = "0.9rem";
+        usersListDiv.append(emptyMsg);
+        return;
     }
+
+    sessionUsers.forEach(user => {
+        const frequentClass = user.frequent ? "user-avatar frequent" : "user-avatar";
+        let avatar;
+        if (user.profile_picture) {
+            avatar = createElement("img", frequentClass, { src: user.profile_picture, alt: user.username });
+        } else {
+            avatar = createElement("div", frequentClass);
+            avatar.style.backgroundColor = "var(--accent-green)";
+        }
+
+        const saveBtn = createElement("button", "action-btn save-btn", {
+            title: user.frequent ? "Unsave User" : "Save User",
+            textContent: user.frequent ? "★" : "☆"
+        });
+        saveBtn.addEventListener("click", () => toggleSaveUser(user.username, user.frequent));
+
+        const refreshBtn = createElement("button", "action-btn refresh-btn", { title: "Refresh Watchlist", textContent: "↻" });
+        refreshBtn.addEventListener("click", () => refreshUser(user.username, refreshBtn));
+
+        const removeBtn = createElement("button", "remove-user-btn", { title: "Remove from session", textContent: "×" });
+        removeBtn.addEventListener("click", () => removeUser(user.username));
+
+        const actions = createElement("div", "user-actions");
+        actions.append(saveBtn, refreshBtn);
+
+        const details = createElement("div", "user-details");
+        details.append(createElement("span", "username", { textContent: user.username }), actions);
+
+        const info = createElement("div", "user-info");
+        info.append(avatar, details);
+
+        const item = createElement("div", "user-item");
+        item.append(info, removeBtn);
+        usersListDiv.append(item);
+    });
+}
+
+function getMaxMovies() {
+    // Clamp to the input's own bounds: 0 or negative limits would empty or break the roulette
+    const min = Number(maxMoviesInput.min);
+    const max = Number(maxMoviesInput.max);
+    const value = parseInt(maxMoviesInput.value, 10);
+    const clamped = Number.isNaN(value) ? 20 : Math.min(Math.max(value, min), max);
+    maxMoviesInput.value = clamped;
+    return clamped;
+}
+
+function resetWheel() {
+    movies = [];
+    segments = [];
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    spinBtn.disabled = true;
 }
 
 async function loadMovies() {
-    const maxMovies = maxMoviesInput.value || 20;
+    if (isSpinning) {
+        // Swapping the pool mid-spin would move the winner's segment: reload once the wheel stops
+        reloadPending = true;
+        return;
+    }
+
+    const requestId = ++loadRequestId;
+    const maxMovies = getMaxMovies();
     try {
         const response = await fetch(`${API_URL}/roulette?mode=${currentMode}&max_movies=${maxMovies}`);
-        if (response.ok) {
-            movies = await response.json();
-            if (movies.length > 0) {
-                spinBtn.disabled = false;
-                // Initial draw with whatever is returned
-                segments = movies;
-                drawWheel();
-            } else {
-                // Clear wheel if no movies match
-                segments = [];
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                spinBtn.disabled = true;
-            }
+        const data = await response.json();
+
+        // A newer request was made, or a spin started, while this one was in flight
+        if (requestId !== loadRequestId) return;
+        if (isSpinning) {
+            reloadPending = true;
+            return;
         }
+
+        if (!response.ok || data.length === 0) {
+            // No users left or no movies match: never keep a stale pool around
+            resetWheel();
+            return;
+        }
+
+        movies = data;
+        spinBtn.disabled = false;
+        // Initial draw with whatever is returned
+        segments = movies;
+        drawWheel();
     } catch (error) {
         console.error("Could not load movies", error);
     }
@@ -343,7 +396,7 @@ function drawWheel() {
         ctx.textAlign = "right";
         ctx.fillStyle = "#fff";
         ctx.font = "bold 24px Roboto";
-        ctx.fillText(movie.title.substring(0, 20), radius - 20, 10);
+        ctx.fillText((movie.title || "").substring(0, 20), radius - 20, 10);
         ctx.restore();
     });
 }
@@ -352,9 +405,25 @@ function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
 }
 
+function finishSpin() {
+    isSpinning = false;
+    spinBtn.disabled = movies.length === 0;
+    if (reloadPending) {
+        reloadPending = false;
+        loadMovies();
+    }
+}
+
 spinBtn.addEventListener("click", async () => {
+    if (isSpinning) return;
     if (movies.length === 0) return alert("Sync watchlist first!");
 
+    if (interactionMode === "eliminate" && movies.length === 1) {
+        // Nothing left to eliminate: the last movie standing is the winner
+        return showWinnerDetail(movies[0]);
+    }
+
+    isSpinning = true;
     spinBtn.disabled = true;
 
     try {
@@ -362,7 +431,9 @@ spinBtn.addEventListener("click", async () => {
         if (interactionMode === "select") {
             // 1. Get official winner from backend
             const response = await fetch(`${API_URL}/spin`);
-            winner = await response.json();
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.detail);
+            winner = data;
         } else {
             // Elimination mode: Pick from local array to stay in sync with removals
             winner = movies[Math.floor(Math.random() * movies.length)];
@@ -420,8 +491,8 @@ spinBtn.addEventListener("click", async () => {
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
-                spinBtn.disabled = false;
                 handleSpinResult(winner);
+                finishSpin();
             }
         }
 
@@ -429,8 +500,8 @@ spinBtn.addEventListener("click", async () => {
 
     } catch (error) {
         console.error(error);
-        alert("Error spinning");
-        spinBtn.disabled = false;
+        alert("Error spinning" + (error.message ? `: ${error.message}` : ""));
+        finishSpin();
     }
 });
 
@@ -441,15 +512,15 @@ function handleSpinResult(winner) {
         // Elimination mode
         // 1. Remove from current movies list
         movies = movies.filter(m => m.letterboxd_url !== winner.letterboxd_url);
+        console.log("Eliminated:", winner.title);
 
-        if (movies.length > 1) {
-            // Reprepare segments (next window) and redraw
-            // Shuffle or just pick the next 10
-            segments = movies.slice(0, Math.min(movies.length, SEGMENT_COUNT));
-            segments.sort(() => 0.5 - Math.random());
-            drawWheel();
-            console.log("Eliminated:", winner.title);
-        } else if (movies.length === 1) {
+        // Reprepare segments (next window) and redraw
+        // Shuffle or just pick the next 10
+        segments = movies.slice(0, Math.min(movies.length, SEGMENT_COUNT));
+        segments.sort(() => 0.5 - Math.random());
+        drawWheel();
+
+        if (movies.length === 1) {
             // Only one left! This is the actual winner
             showWinnerDetail(movies[0]);
         }

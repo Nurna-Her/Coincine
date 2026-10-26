@@ -133,20 +133,21 @@ class LetterboxdScraper:
     def get_watchlist(self, username: str):
         """
         Public method to scrape the full watchlist of a user.
+        Returns None if the scrape failed or was incomplete, so callers never persist a partial watchlist.
         """
         movies = []
         try:
             start_time = time.time()
             url = f"https://letterboxd.com/{username}/watchlist/"
             self.driver.get(url)
-            
+
             max_pages = self._get_max_pages()
             logger.info(f"Target user: {username} | Pages to scrape: {max_pages}")
-            
+
             # Scrape first page
             time.sleep(random.uniform(2, 4))
             self._extract_movies_from_current_page(movies)
-            
+
             if max_pages <= 1:
                 return movies
 
@@ -155,14 +156,18 @@ class LetterboxdScraper:
                 page_url = f"{url}page/{page}/"
                 self.driver.get(page_url)
                 time.sleep(random.uniform(2, 4))
-                self._extract_movies_from_current_page(movies)
+                if self._extract_movies_from_current_page(movies) == 0:
+                    # A listed page with no movies means we were blocked or the page failed to load
+                    logger.error(f"Page {page} of {username}'s watchlist returned no movies. Discarding partial scrape.")
+                    return None
 
             end_time = time.time()
             logger.info(f"DEBUG - Time taken to scrape watchlist for {username}: {end_time - start_time}")
             logger.info(f"Successfully scraped {len(movies)} movies for {username}")
         except Exception as e:
             logger.error(f"Error scraping watchlist for {username}: {e}")
-            
+            return None
+
         return movies
 
     def _get_max_pages(self):
@@ -185,11 +190,13 @@ class LetterboxdScraper:
     def _extract_movies_from_current_page(self, movies_list):
         """
         Internal: Parses movie elements from the current page.
+        Returns the number of movies added.
         """
+        added = 0
         elements = self.driver.find_elements(By.CSS_SELECTOR, "li.griditem")
         if not elements:
             logger.warning("No movies found. Does user have a watchlist?")
-            return
+            return added
         for elem in elements:
             try:
                 img_elem = elem.find_element(By.CSS_SELECTOR, "img")
@@ -199,11 +206,15 @@ class LetterboxdScraper:
                 
                 poster_url = img_elem.get_attribute("src")
                 link = elem.find_element(By.CSS_SELECTOR, "a").get_attribute("href")
-                
+                if not title or not link:
+                    continue
+
                 movies_list.append({
                     "title": title,
                     "letterboxd_url": link,
                     "poster_url": poster_url
                 })
+                added += 1
             except Exception:
                 continue
+        return added

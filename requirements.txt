@@ -1,7 +1,6 @@
-fastapi
-uvicorn
-selenium
-webdriver-manager
-sqlmodel
-requests
-beautifulsoup4
+fastapi==0.128.0
+uvicorn==0.40.0
+selenium==4.31.0
+webdriver-manager==4.0.2
+undetected-chromedriver==3.5.5
+sqlmodel==0.0.33

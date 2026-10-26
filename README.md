@@ -18,7 +18,7 @@ Here is a snapshot on how the app works:
 ![Coincine](LINK)
 
 ## 🎞️ Tech Stack
-- **Backend**: Python, FastAPI, SQLModel (SQLite), Selenium, BeautifulSoup4.
+- **Backend**: Python, FastAPI, SQLModel (SQLite), Selenium, undetected-chromedriver.
 - **Frontend**: Vanilla HTML5, CSS3, JavaScript.
 
 ## ​📽️ Getting Started
@@ -37,7 +37,7 @@ pip install -r requirements.txt
      ```bash
      python -m uvicorn backend.app.main:app --reload
      ```
-  2. Open `frontend/index.html` in your browser.
+  2. Open http://localhost:8000/ in your browser (the backend serves the frontend).
 
 
 ## 📼 Usage
